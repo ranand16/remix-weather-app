@@ -1,0 +1,41 @@
+{
+  "name": "remix-weather-app",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "remix build",
+    "dev": "remix dev --manual",
+    "start": "remix-serve ./build/index.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "@remix-run/css-bundle": "^2.1.0",
+    "@remix-run/node": "^2.1.0",
+    "@remix-run/react": "^2.1.0",
+    "@remix-run/serve": "^2.1.0",
+    "@types/bcryptjs": "^2.4.6",
+    "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
+    "dayjs": "^1.11.10",
+    "dotenv": "^16.3.1",
+    "isbot": "^3.6.8",
+    "mongodb": "^6.9.0",
+    "prisma": "^5.20.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remix-auth": "^3.7.0",
+    "remix-auth-form": "^1.5.0",
+    "remix-auth-webauthn": "^0.3.4",
+    "us-zips": "2022.09"
+  },
+  "devDependencies": {
+    "@remix-run/dev": "^2.1.0",
+    "@remix-run/eslint-config": "^2.1.0",
+    "eslint": "^8.38.0",
+    "tailwindcss": "^3.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
