@@ -20,15 +20,23 @@ export const getMyPrefs = async (userID: string) => {
 };
 
 export const createFavCity = async ({ city, byUser }) => {
-  const newPref = await prisma.preferences.create({
-    data: { city, byUser  },
-  });
-  if(!newPref){
-    return json({error: 'Could not save the city'})
+  try {
+    const newPref = await prisma.preferences.create({
+      data: { city, byUser  },
+    }); 
+    if(!newPref){
+      return json({error: 'Could not save the city'})
+    }
+    return json({
+      message: "City preference added successfully",
+      success: "true",
+      payload: newPref,
+    })
+  } catch(e) {
+    console.log("error while creation 🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀");
+    return json({
+      message: "City preference could not be added!",
+      success: "false"
+    })
   }
-  return json({
-    message: "City preference added successfully",
-    success: "true",
-    payload: newPref,
-  })
 }

@@ -13,30 +13,24 @@ const authenticator = new Authenticator(sessionStorage)
 
 const formStrategy = new FormStrategy(async ({form}) => {
     const email = form.get("email")
-    console.log("🚀 ~ formStrategy ~ email:", email)
     const password = form.get("password")
-    console.log("🚀 ~ formStrategy ~ password:", password)
 
     const user = await prisma.user.findUnique({
         where: { email },
     });
 
     if (!user) {
-        console.log("you entered a wrong email")
         throw new AuthorizationError()
     }
-    console.log("🚀 ~ 1 formStrategy ~ password:", password)
 
     const passwordsMatch = await bcrypt.compare(
         password as string,
         user.password,
     )
-    console.log("🚀 ~ 2 formStrategy ~ password:", password)
 
     if (!passwordsMatch) {
         throw new AuthorizationError()
     }
-    console.log("🚀 ~ 3 formStrategy ~ password:", password)
 
     return user
 })

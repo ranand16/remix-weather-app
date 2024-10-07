@@ -19,14 +19,14 @@ model User {
   updatedAt DateTime      @updatedAt
   email     String        @unique
   password  String
-  name      String
+  name      String?
   prefs     Preferences[]
 }
 
 model Preferences {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   prefId    String   @db.ObjectId
-  city      String
+  city      String?  @unique
   byUser    User     @relation(fields: [prefId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

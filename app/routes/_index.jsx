@@ -3,9 +3,10 @@ import Widget from "../components/Widget";
 import Search from "../components/Search";
 import { json, redirect } from "@remix-run/node";
 import { authenticator } from "../utils/auth.server";
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData, useSubmit } from "@remix-run/react";
 import Layout from "../components/Layout";
 import { createFavCity, getMyPrefs } from "../utils/preferences.server";
+
 const DEFAULT_CITY = "New delhi";
 export const meta = () => {
     return [{ title: "Remix Weather App" }];
@@ -16,19 +17,23 @@ export const loader = async ({ request }) => {
     let city = url.searchParams.get("location");
     if (!city) city = DEFAULT_CITY;
 
-    let userPrefs = {};
+    let prefData;
+    if (user) {
+        prefData = await getMyPrefs(user.id);
+    }
+
     const [weatherInfo] = await Promise.all([getWeather(city)]);
     return {
         weatherInfo: weatherInfo,
         user,
-        userPrefs,
+        prefData,
     };
 };
 
 export const action = async ({ request }) => {
     const formData = await request.formData();
     const action = formData.get("action");
-    console.log("🚀 ~ action ~ action:", formData, " ::: ", action);
+    console.log("🚀🚀🚀🚀🚀🚀action🚀🚀🚀🚀🚀🚀:", action);
 
     switch (action) {
         case "logout": {
@@ -38,20 +43,26 @@ export const action = async ({ request }) => {
             });
         }
 
-        case "add_nd": {
-            console.log("Adding delhi aas fav city!");
+        case "add_fav_city": {
+            const cit = formData.get("currentcity");
             const user = await authenticator.isAuthenticated(request);
             if (!user) return redirect("/login");
-            const cfavcity = await createFavCity({
-                city: "London",
+            const favcity = await createFavCity({
+                city: cit,
                 byUser: {
                     connect: {
                         id: user.id,
                     },
                 },
             });
-            return cfavcity;
-            // return redirect("/");
+            return redirect(`/?location=${cit}`);
+        }
+        case "go_to_fav_city": {
+            const city = "New Delhi";
+            const user = await authenticator.isAuthenticated(request);
+            if (!user) return redirect("/login");
+
+            return redirect(`/?location=${city}`);
         }
 
         // action == search
@@ -63,50 +74,26 @@ export const action = async ({ request }) => {
 };
 
 export default function Index() {
+    const ld = useLoaderData();
+    const { prefData = {} } = ld;
+    const { prefs = [] } = prefData;
+    console.log("🚀 ~ Index ~ prefs:", prefs);
+    const submit = useSubmit();
+    const goToFavCity = (e) => {
+        console.log("🚀 ~ goToFavCity ~ e:", e);
+        const favCity = e.target.id.split("-")[2];
+        console.log("🚀 ~ goToFavCity ~ favCity:", favCity);
+        submit(e.target, {
+            action: `location=${favCity}`,
+        });
+    };
+
     return (
         <Layout>
             <div className="bg-gray-600 flex relative">
-                <div className="flex items-start absolute max-w-xs xl:max-w-md">
-                    <Form method="post">
-                        <button
-                            type="submit"
-                            name="action"
-                            value="add_nd"
-                            id="add_nd"
-                            data-city="add_nd"
-                            className="text-red-500 py-1 border px-3 text-sm rounded-md font-semibold"
-                        >
-                            Add new delhi to favorite
-                        </button>
-                        {/* <button
-                            type="submit"
-                            name="action"
-                            value="logout"
-                            id="add_ld"
-                            className="text-red-500 py-1 border px-3 text-sm rounded-md font-semibold"
-                        >
-                            Add london to favorite
-                        </button>
-                        <button
-                            type="submit"
-                            name="action"
-                            value="logout"
-                            id="add_hk"
-                            className="text-red-500 py-1 border px-3 text-sm rounded-md font-semibold"
-                        >
-                            Add hong kong to favorite
-                        </button>
-                        <button
-                            type="submit"
-                            name="action"
-                            value="logout"
-                            id="add_pt"
-                            className="text-red-500 py-1 border px-3 text-sm rounded-md font-semibold"
-                        >
-                            Add patna to favorite
-                        </button> */}
-                    </Form>
-                </div>
+                {/* <div className="flex items-start absolute max-w-xs xl:max-w-md">
+                    Dropdown here
+                </div> */}
                 <div className="mx-auto p-4 h-screen flex-col justify-center items-center max-w-max">
                     <div className="mb-10">
                         <h1 className="text-center text-white text-xl font-bold">
@@ -115,6 +102,23 @@ export default function Index() {
                     </div>
                     <Search />
                     <Widget />
+                    <div className="w-full h-24"></div>
+                    <h2 className="text-white mb-4">Your favorite cities</h2>
+                    <Form>
+                        {prefs.map((pref, i) => {
+                            return (
+                                <button
+                                    key={pref.id || i}
+                                    name="action"
+                                    className="text-white border px-2 py-1"
+                                    id={`fav-city-${pref.city}`}
+                                    onClick={goToFavCity}
+                                >
+                                    {pref.city}
+                                </button>
+                            );
+                        })}
+                    </Form>
                 </div>
             </div>
         </Layout>
