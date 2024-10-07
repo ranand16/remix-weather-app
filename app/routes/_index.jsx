@@ -32,8 +32,24 @@ export const loader = async ({ request }) => {
 
 export const action = async ({ request }) => {
     const formData = await request.formData();
+    console.log("🚀 ~ action ~ formData:", formData);
     const action = formData.get("action");
-    console.log("🚀🚀🚀🚀🚀🚀action🚀🚀🚀🚀🚀🚀:", action);
+
+    console.log(
+        "🚀🚀🚀🚀🚀🚀action🚀🚀🚀🚀🚀🚀:",
+        action,
+        formData.get("search")
+    );
+
+    if (action?.includes("fav-city")) {
+        const favCity = action.split("-")[2];
+        return redirect(`/?location=${favCity}`);
+    }
+
+    if (!action) {
+        const city = formData.get("search") || DEFAULT_CITY;
+        return redirect(`/?location=${city}`);
+    }
 
     switch (action) {
         case "logout": {
@@ -57,19 +73,16 @@ export const action = async ({ request }) => {
             });
             return redirect(`/?location=${cit}`);
         }
-        case "go_to_fav_city": {
-            const city = "New Delhi";
-            const user = await authenticator.isAuthenticated(request);
-            if (!user) return redirect("/login");
+        // case "go_to_fav_city": {
+        //     const city = "New Delhi";
+        //     const user = await authenticator.isAuthenticated(request);
+        //     if (!user) return redirect("/login");
 
-            return redirect(`/?location=${city}`);
-        }
+        //     return redirect(`/?location=${city}`);
+        // }
 
-        // action == search
-        default: {
-            const city = formData.get("search") || DEFAULT_CITY;
-            return redirect(`/?location=${city}`);
-        }
+        default:
+            return redirect(`/?location=New%20Delhi`);
     }
 };
 
@@ -77,16 +90,6 @@ export default function Index() {
     const ld = useLoaderData();
     const { prefData = {} } = ld;
     const { prefs = [] } = prefData;
-    console.log("🚀 ~ Index ~ prefs:", prefs);
-    const submit = useSubmit();
-    const goToFavCity = (e) => {
-        console.log("🚀 ~ goToFavCity ~ e:", e);
-        const favCity = e.target.id.split("-")[2];
-        console.log("🚀 ~ goToFavCity ~ favCity:", favCity);
-        submit(e.target, {
-            action: `location=${favCity}`,
-        });
-    };
 
     return (
         <Layout>
@@ -104,15 +107,16 @@ export default function Index() {
                     <Widget />
                     <div className="w-full h-24"></div>
                     <h2 className="text-white mb-4">Your favorite cities</h2>
-                    <Form>
+                    <Form method="post">
                         {prefs.map((pref, i) => {
                             return (
                                 <button
                                     key={pref.id || i}
                                     name="action"
+                                    value={`fav-city-${pref.city}`}
                                     className="text-white border px-2 py-1"
                                     id={`fav-city-${pref.city}`}
-                                    onClick={goToFavCity}
+                                    type="submit"
                                 >
                                     {pref.city}
                                 </button>

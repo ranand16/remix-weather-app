@@ -1,4 +1,5 @@
 import { Form, useLoaderData, useNavigation } from "@remix-run/react";
+import { useEffect } from "react";
 
 export default function Search() {
     const navigation = useNavigation();
@@ -6,6 +7,11 @@ export default function Search() {
     const data = useLoaderData();
     const { weatherInfo = { current: {}, location: {}, forecaset: {} } } = data;
     const { location } = weatherInfo;
+
+    useEffect(() => {
+        document.getElementById("search").value = location?.name;
+    }, [location]);
+
     return (
         <div className="max-w-md mx-auto mb-10">
             <div className="relative flex items-center w-full h-12 rounded-lg focus-within:shadow-lg bg-white overflow-hidden">
