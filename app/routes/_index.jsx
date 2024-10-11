@@ -22,6 +22,8 @@ export const loader = async ({ request }) => {
         prefData = await getMyPrefs(user.id);
     }
 
+    // to check if the requested city is cached or not
+
     const [weatherInfo] = await Promise.all([getWeather(city)]);
     return {
         weatherInfo: weatherInfo,
